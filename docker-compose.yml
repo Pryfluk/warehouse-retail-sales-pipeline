@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15
+    container_name: aie321_pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2548jewjew
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  ingest:
+    build: .
+    depends_on:
+      - postgres_db
+    environment:
+      DB_USER: postgres
+      DB_PASS: 2548jewjew
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+    volumes:
+      - ./data:/data   # mount CSV
+    command: python ingest.py
+
+  transform:
+    build: .
+    depends_on:
+      - postgres_db
+    environment:
+      DB_USER: postgres
+      DB_PASS: 2548jewjew
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+    volumes:
+      - ./data:/data
+    command: python transform.py
+
+  publish:
+    build: .
+    depends_on:
+      - postgres_db
+      - transform
+    environment:
+      DB_USER: postgres
+      DB_PASS: 2548jewjew
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+      TABLE_NAME: monthly_sales_summary
+      SCHEMA_NAME: production
+      SERVICE_ACCOUNT_FILE: /data/service_account.json
+      SHEET_NAME: AIE321_Kaggle
+      WORKSHEET_NAME: Production
+    volumes:
+      - ./data:/data
+    command: python publish.py
+
+volumes:
+  pgdata:
