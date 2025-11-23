@@ -6,8 +6,6 @@
 
 ---
 
-## English Version
-
 ### Project Overview
 This project is a data pipeline for processing sales data from warehouses and retail stores. The pipeline performs three main tasks:
 
@@ -62,3 +60,4 @@ Notes
 Do not commit sensitive files like data/*.json or CSV data.
 
 Make sure Docker is installed and running.
+
